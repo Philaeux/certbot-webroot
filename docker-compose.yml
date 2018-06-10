@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  certbot_webroot:
+    image: nginx:latest
+    container_name: "certbot_webroot"
+    restart: always
+    volumes:
+      - "/home/docker/certbot_webroot:/usr/share/nginx/html"
+    ports:
+      - '10001:80'
