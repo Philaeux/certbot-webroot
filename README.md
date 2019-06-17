@@ -47,24 +47,28 @@ Use the following command to generate a certificate using the webroot.
 
 ### Renew certificates
 
-Use certbot renew with the webroot
-
-```make renew```
-
+A simple ``certbot renew`` will run the same challenge that during the creatuib, so it will be intercepted by the webroot which will ensure the renewal.
+ 
 ### Haproxy refresh certificates
 
-Haproxy expects a single file to contain the full certificate for a domain. This commands generate this file for each domain (make sur to load it into your haproxy cfg):
+Haproxy expects a single file to contain the full certificate for a domain. For each domain in ``/etc/letsencrypt/live/``, you need to generate a single ``haproxy.pem`` containing the content of ``fullchain.pem`` and ``privkey.pem``. A bash script can do the job:
+ 
+`` aze ``
 
-```make refresh```
+This script is saved in ```make refresh```
 
 ### Reload Haproxy
 
-Reload haproxy to load the new certificates.
-
-```make reload```
+Reloading haproxy ensure the new certificate is loaded in memory, which is done with a simple service restart.
+ 
+ ``service haproxy restart``
 
 ### Full process
 
-This command do the full renew process, requesting certificate renew, generating new files and reloading haproxy.
+A makefile is inside the project to fully refresh the certificate: with 
 
-```make full```
+```make refresh_certificates```
+
+Add the command to a cron job to do it every month
+
+``0 0 1 * * make -f <path makefile> refresh_certificates``
