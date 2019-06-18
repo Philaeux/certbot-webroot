@@ -37,7 +37,7 @@ backend example
 
 ### Certbot webroot docker
 
-Deploy using ```make certbot_webroot``` and let the service listen for file requests.
+Deploy using ```docker-compose up -d``` and let the service listen for file requests.
 
 ### Create a new certificate for a domain
 
@@ -45,30 +45,22 @@ Use the following command to generate a certificate using the webroot.
 
 ```sudo certbot certonly --webroot -w /home/docker/certbot_webroot -d example.fr --non-interactive --agree-tos --email adress@mail```
 
+The docker must be up, so is haproxy. You might have to start haproxy without any certificate if you don't have any yet.
+
 ### Renew certificates
 
-A simple ``certbot renew`` will run the same challenge that during the creatuib, so it will be intercepted by the webroot which will ensure the renewal.
+A simple ``certbot renew`` will run the same challenge that during the creation, so it will be intercepted by the webroot which will ensure the renewal.
  
 ### Haproxy refresh certificates
 
-Haproxy expects a single file to contain the full certificate for a domain. For each domain in ``/etc/letsencrypt/live/``, you need to generate a single ``haproxy.pem`` containing the content of ``fullchain.pem`` and ``privkey.pem``. A bash script can do the job:
- 
-`` aze ``
-
-This script is saved in ```make refresh```
+Haproxy expects a single file to contain the full certificate for a domain. For each domain in ``/etc/letsencrypt/live/``, you need to generate a single ``haproxy.pem`` containing the content of ``fullchain.pem`` and ``privkey.pem``.
 
 ### Reload Haproxy
 
 Reloading haproxy ensure the new certificate is loaded in memory, which is done with a simple service restart.
- 
- ``service haproxy restart``
 
 ### Full process
 
-A makefile is inside the project to fully refresh the certificate: with 
+``certbot_refresh.py`` contains the full refresh process, add a call to a cron job to do it every month:
 
-```make refresh_certificates```
-
-Add the command to a cron job to do it every month
-
-``0 0 1 * * make -f <path makefile> refresh_certificates``
+``0 0 1 * * /<path to this directory>/certbot_refresh.py``
