@@ -1,11 +1,15 @@
 #!/usr/bin/python3
 import os
+import subprocess
 
 
 # Call certbot program to refresh all live certificates.
 def certbot_renew():
     print('## Renewing certificates files using certbot ##')
-    os.system('certbot renew')
+    result = subprocess.run("certbot renew",
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+    return ('The following certs were successfully renewed' in result.stdout or
+            'Congratulations, all renewals succeeded. The following certs have been renewed' in result.stdout)
 
 
 # Generate haproxy.pem aggregate files of fullchain.pem and privkey.pem for each directory in /etc/letsencrypt/live
@@ -30,11 +34,14 @@ def generate_haproxy():
 # Reload haproxy
 def reload_haproxy():
     print('## Reloading haproxy ##')
-    os.system('service haproxy restart')
+    subprocess.run(["service haproxy reload"],
+                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 
 
 # Main program to call in cron job
 if __name__ == "__main__":
-    certbot_renew()
-    generate_haproxy()
-    reload_haproxy()
+    if certbot_renew():
+        generate_haproxy()
+        reload_haproxy()
+    else:
+        print('No certificate renewed, no reload is necessary.')

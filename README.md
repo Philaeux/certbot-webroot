@@ -57,10 +57,10 @@ Haproxy expects a single file to contain the full certificate for a domain. For 
 
 ### Reload Haproxy
 
-Reloading haproxy ensure the new certificate is loaded in memory, which is done with a simple service restart.
+Reloading haproxy ensure the new certificate is loaded in memory, which is done with a simple service reload.
 
 ### Full process
 
-``certbot_refresh.py`` contains the full refresh process, add a call to a cron job to do it every month:
+``certbot_refresh.py`` contains the full refresh process, add a call to a cron job to do it every day. (The haproxy is not reloaded if there is nothing updated).
 
-``0 0 1 * * /<path to this directory>/certbot_refresh.py``
+``0 0 * * * /<path to this directory>/certbot_refresh.py``
