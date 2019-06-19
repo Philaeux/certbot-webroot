@@ -10,7 +10,7 @@ def certbot_renew():
 
 # Generate haproxy.pem aggregate files of fullchain.pem and privkey.pem for each directory in /etc/letsencrypt/live
 def generate_haproxy():
-    print('## Renewing Haproxy files ##')
+    print('## Generating haproxy files ##')
     if not os.path.exists('/etc/letsencrypt/live'):
         return
 
@@ -29,7 +29,7 @@ def generate_haproxy():
 
 # Reload haproxy
 def reload_haproxy():
-    print('## Reloading haproxy to load file in memory ##')
+    print('## Reloading haproxy ##')
     os.system('service haproxy restart')
 
 
