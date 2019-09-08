@@ -40,7 +40,7 @@ def generate_haproxy():
 # Reload haproxy
 def reload_haproxy():
     print('## Reloading haproxy ##')
-    subprocess.run(["service haproxy reload"],
+    subprocess.run(["systemctl reload haproxy"],
                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 
 
