@@ -1,13 +1,19 @@
 #!/usr/bin/python3
+
 import os
 import subprocess
+import sys
 
 
 # Call certbot program to refresh all live certificates.
-def certbot_renew():
+def certbot_renew(debug=False):
     print('## Renewing certificates files using certbot ##')
     result = subprocess.run("certbot renew",
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+
+    if debug:
+        print(result.stdout)
+
     return ('The following certs were successfully renewed' in result.stdout or
             'Congratulations, all renewals succeeded. The following certs have been renewed' in result.stdout)
 
@@ -40,7 +46,8 @@ def reload_haproxy():
 
 # Main program to call in cron job
 if __name__ == "__main__":
-    if certbot_renew():
+    debug = '--debug' in sys.argv
+    if certbot_renew(debug=debug):
         generate_haproxy()
         reload_haproxy()
     else:
