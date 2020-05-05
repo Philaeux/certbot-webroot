@@ -12,7 +12,7 @@ frontend http-in
         use_backend letsencrypt if { path_beg /.well-known/acme-challenge }
 
         # Redirect to HTTPS
-        redirect scheme https code 301
+	http-request redirect scheme https code 301
 
 frontend https-in
         bind :443 ssl crt /etc/letsencrypt/live/example.fr/haproxy.pem 
