@@ -47,7 +47,8 @@ def reload_haproxy():
 # Main program to call in cron job
 if __name__ == "__main__":
     debug = '--debug' in sys.argv
-    if certbot_renew(debug=debug):
+    force_concat = '--force_concat' in sys.argv
+    if certbot_renew(debug=debug) or force_concat:
         generate_haproxy()
         reload_haproxy()
     else:
