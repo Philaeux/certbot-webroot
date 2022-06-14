@@ -18,7 +18,7 @@ frontend http-in
 frontend https-in
         bind *:443 ssl crt-list /etc/letsencrypt/live_list.txt
 
-        use_backend letsencrypt if { bath_beg /.well-known/acme-challenge/ }
+        use_backend letsencrypt if { path_beg /.well-known/acme-challenge/ }
         use_backend domain if { hdr(host) -i domain.org }
 
 backend letsencrypt
