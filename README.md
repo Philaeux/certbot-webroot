@@ -1,66 +1,61 @@
 # Certbot Webroot
 
-This project is a simple ```nginx``` docker with a specific volume to ease the generation of certificates using ```certbot``` and serving services with ```haproxy```.
+This project is a simple snippet to use ```certbot``` with ```haproxy```.
 
 ### Haproxy config
 
 ```
 frontend http-in
-        bind :80
+        bind *:80
 
-        # DevOps routes
-        use_backend letsencrypt if { path_beg /.well-known/acme-challenge }
+        # Let's encrypt challenge
+        acl letsencrypt-acl path_beg /.well-known/acme-challenge/ }
+        use_backend letsencrypt if letsencrypt-acl
 
-        # Redirect to HTTPS
-	http-request redirect scheme https code 301
+        # Go to HTTPS otherwise
+        http-request redirect scheme https code 301 if ! letsencrypt-acl
 
 frontend https-in
-        bind :443 ssl crt /etc/letsencrypt/live/example.fr/haproxy.pem 
-        http-request set-header X-Forwarded-Proto https if { ssl_fc }
+        bind *:443 ssl crt-list /etc/letsencrypt/live_list.txt
+        use_backend domain if { hdr(host) -i domain.org }
 
-        # DevOps routes
-        use_backend letsencrypt if { path_beg /.well-known/acme-challenge }
-
-        # Application routes
-        use_backend example if { hdr(host) -i example.fr }
-
-# DevOps services
 backend letsencrypt
-        option httpclose
-        server node1 127.0.0.1:10001 cookie A check
+        server certbot 127.0.0.1:8899
 
-# Application services
-backend example
-        option httpclose
-        server node1 127.0.0.1:10002 cookie A check
+backend domain
+	server domain 127.0.0.1:XXXX
 ```
-
-### Certbot webroot docker
-
-Deploy using ```docker-compose up -d``` and let the service listen for file requests.
 
 ### Create a new certificate for a domain
 
 Use the following command to generate a certificate using the webroot.
 
-```sudo certbot certonly --webroot -w /home/docker/certbot_webroot -d example.fr --non-interactive --agree-tos --email adress@mail```
-
-The docker must be up, so is haproxy. You might have to start haproxy without any certificate if you don't have any yet.
+```sudo certbot certonly --standalone -d domain.com --non-interactive --agree-tos --email address@email --http-01-port=8899```
 
 ### Renew certificates
 
-A simple ``certbot renew`` will run the same challenge that during the creation, so it will be intercepted by the webroot which will ensure the renewal.
+A simple ``certbot renew`` will run the same challenge that during the creation.
  
 ### Haproxy refresh certificates
 
-Haproxy expects a single file to contain the full certificate for a domain. For each domain in ``/etc/letsencrypt/live/``, you need to generate a single ``haproxy.pem`` containing the content of ``fullchain.pem`` and ``privkey.pem``.
+Haproxy expects a single file to contain the full certificate for a domain. For each domain in ``/etc/letsencrypt/live/``, you need to generate a single ``haproxy.pem`` containing the content of ``fullchain.pem`` and ``privkey.pem``.  
+
+The file ``/etc/letsencrypt/live_list.txt`` should contain the list of all domains with a path with their certificate for haproxy to load, in this format:
+```
+/etc/letsencrypt/domain1/haproxy.pem domain1
+/etc/letsencrypt/domain2/haproxy.pem domain2
+```
 
 ### Reload Haproxy
 
-Reloading haproxy ensure the new certificate is loaded in memory, which is done with a simple service reload.
+Reloading haproxy ensure the new certificate is loaded in memory, which is done with a simple service reload: ``sudo systemctl reload haproxy``.
 
 ### Full process
 
-``certbot_refresh.py`` contains the full refresh process, add a call to a cron job to do it every day. (The haproxy is not reloaded if there is nothing updated).
+``certbot_refresh.py`` contains the full refresh process in a python script. The haproxy is not reloaded if there is nothing updated.
 
-``0 0 * * * /<path to this directory>/certbot_refresh.py``
+Add a call as CRON job to do it every week:
+
+``sudo crontab -u root -e``
+
+``0 1 * * 0 python3 /<path to this directory>/certbot_refresh.py``
