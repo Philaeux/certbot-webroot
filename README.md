@@ -9,7 +9,7 @@ frontend http-in
         bind *:80
 
         # Let's encrypt challenge
-        acl letsencrypt-acl path_beg /.well-known/acme-challenge/ }
+        acl letsencrypt-acl path_beg { /.well-known/acme-challenge/ }
         use_backend letsencrypt if letsencrypt-acl
 
         # Go to HTTPS otherwise
