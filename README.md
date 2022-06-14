@@ -17,6 +17,8 @@ frontend http-in
 
 frontend https-in
         bind *:443 ssl crt-list /etc/letsencrypt/live_list.txt
+
+        use_backend letsencrypt if { bath_beg /.well-known/acme-challenge/ }
         use_backend domain if { hdr(host) -i domain.org }
 
 backend letsencrypt
@@ -34,7 +36,7 @@ Use the following command to generate a certificate using the webroot.
 
 ### Renew certificates
 
-A simple ``certbot renew`` will run the same challenge that during the creation.
+A simple ``certbot renew --tls-sni-01-port=8899`` will run the same challenge that during the creation.
  
 ### Haproxy refresh certificates
 

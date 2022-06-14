@@ -8,7 +8,7 @@ import sys
 # Call certbot program to refresh all live certificates.
 def certbot_renew(debug=False):
     print('## Renewing certificates files using certbot ##')
-    result = subprocess.run("certbot renew",
+    result = subprocess.run("certbot renew --tls-sni-01-port=8899",
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 
     if debug:
